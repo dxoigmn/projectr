@@ -52,3 +52,18 @@
         - @project.tags.each do |tag|
           %li
             %a{ :href => "/#{Rack::Utils.escape(@project.name)}/#{Rack::Utils.escape(tag.name)}", :class => (tag.name == @project.ref ? 'selected' : nil) }= tag.name
+
+    #footer
+      %ul.pagination
+        %li.previous
+          - if @project.page == 1
+            = '« Previous'
+          - else
+            %a{ :href => "?page=#{@project.page - 1}" }= '« Previous'
+            
+        %li.next
+          - if @project.page == @project.page_count
+            = 'Next »'
+          - else
+            %a{ :href => "?page=#{@project.page + 1}" }= 'Next »'
+    

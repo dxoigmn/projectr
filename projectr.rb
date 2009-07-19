@@ -8,17 +8,22 @@ require 'digest/md5'
 
 module Projectr
   class Project
-    attr_reader :path, :name, :repo, :ref
+    attr_reader :path, :name, :repo, :ref, :page
     
     def initialize(path, options = {})
       @path = path
       @name = File.basename(path)
       @repo = Grit::Repo.new(path)
       @ref  = options[:ref] || @repo.heads.first.name
+      @page = (options[:page] || 1).to_i
     end
     
     def commits
-      @repo.commits(@ref)
+      @repo.commits(@ref, 10, (@page - 1) * 10)
+    end
+    
+    def page_count
+      (@repo.commit_count(@ref) / 10.0).ceil
     end
     
     def branches
@@ -58,7 +63,7 @@ get '/' do
 end
 
 get '/:project' do
-  @project = Projectr.find(params[:project])
+  @project = Projectr.find(params[:project], :page => params[:page])
   
   halt 'Project does not exist' unless @project
   
@@ -66,7 +71,7 @@ get '/:project' do
 end
 
 get '/:project/:ref' do
-  @project = Projectr.find(params[:project], :ref => params[:ref])
+  @project = Projectr.find(params[:project], :ref => params[:ref], :page => params[:page])
   
   halt 'Project does not exist' unless @project
   
