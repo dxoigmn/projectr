@@ -19,21 +19,21 @@
     
     #article
       - @project.commits.each do |commit|
-        .commit
+        .commit{ :id => commit.id }
           %h3= commit.sha
           
           .author
             %h4= 'Author'
             
-            %img{ :src => "http://www.gravatar.com/avatar/#{Digest::MD5.hexdigest(commit.author.email.downcase)}.jpg?d=identicon" }
-            .name= commit.author.name
+            %img{ :src => commit.author_gravatar }
+            .name= commit.author_name
             .date= commit.authored_date
             
-          .committer{ :class => (commit.author.email.downcase == commit.committer.email.downcase ? 'is_author' : nil) }
+          .committer{ :class => (commit.by_author? ? 'is_author' : nil) }
             %h4= 'Committer'
             
-            %img{ :src => "http://www.gravatar.com/avatar/#{Digest::MD5.hexdigest(commit.committer.email.downcase)}.jpg?d=identicon" }
-            .name= commit.committer.name
+            %img{ :src => commit.committer_gravatar }
+            .name= commit.committer_name
             .date= commit.committed_date
             
           .message= commit.message
