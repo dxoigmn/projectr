@@ -13,57 +13,58 @@
     %script{ :src => '/javascripts/projectr.js', :type => 'text/javascript' }
     
   %body
-    #header
-      %h1= 'Projectr'
-      %h2= @project.name
-    
-    #article
-      - @project.commits.each do |commit|
-        .commit{ :id => commit.id }
-          %h3= commit.sha
-          
-          .author
-            %h4= 'Author'
-            
-            %img{ :src => commit.author_gravatar }
-            .name= commit.author_name
-            .date= commit.authored_date
-            
-          .committer{ :class => (commit.by_author? ? 'is_author' : nil) }
-            %h4= 'Committer'
-            
-            %img{ :src => commit.committer_gravatar }
-            .name= commit.committer_name
-            .date= commit.committed_date
-            
-          .message= commit.message
-          
-          .clear
-          
-    #aside
-      %h3= 'Branches'
-      %ul
-        - @project.branches.each do |branch|
-          %li
-            %a{ :href => "/#{Rack::Utils.escape(@project.name)}/#{Rack::Utils.escape(branch.name)}", :class => (branch.name == @project.ref ? 'selected' : nil) }= branch.name
-            
-      %h3= 'Tags'
-      %ul
-        - @project.tags.each do |tag|
-          %li
-            %a{ :href => "/#{Rack::Utils.escape(@project.name)}/#{Rack::Utils.escape(tag.name)}", :class => (tag.name == @project.ref ? 'selected' : nil) }= tag.name
+    #content
+      #header
+        %h1= 'Projectr'
+        %h2= @project.name
 
-    #footer
-      %ul.pagination
-        %li.previous
-          - if @project.page == 1
-            = '« Previous'
-          - else
-            %a{ :href => "?page=#{@project.page - 1}" }= '« Previous'
-            
-        %li.next
-          - if @project.page == @project.page_count
-            = 'Next »'
-          - else
-            %a{ :href => "?page=#{@project.page + 1}" }= 'Next »'
+      #article
+        - @project.commits.each do |commit|
+          .commit{ :id => commit.id }
+            %h3= commit.sha
+
+            .author
+              %h4= 'Author'
+
+              %img{ :src => commit.author_gravatar }
+              .name= commit.author_name
+              .date= commit.authored_date
+
+            .committer{ :class => (commit.by_author? ? 'is_author' : nil) }
+              %h4= 'Committer'
+
+              %img{ :src => commit.committer_gravatar }
+              .name= commit.committer_name
+              .date= commit.committed_date
+
+            .message= preserve(commit.message)
+
+            .clear
+
+      #aside
+        %h3= 'Branches'
+        %ul
+          - @project.branches.each do |branch|
+            %li
+              %a{ :href => "/#{Rack::Utils.escape(@project.name)}/#{Rack::Utils.escape(branch.name)}", :class => (branch.name == @project.ref ? 'selected' : nil) }= branch.name
+
+        %h3= 'Tags'
+        %ul
+          - @project.tags.each do |tag|
+            %li
+              %a{ :href => "/#{Rack::Utils.escape(@project.name)}/#{Rack::Utils.escape(tag.name)}", :class => (tag.name == @project.ref ? 'selected' : nil) }= tag.name
+
+      #footer
+        %ul#pagination
+          %li#previous
+            - if @project.page == 1
+              = '« Previous'
+            - else
+              %a{ :href => "?page=#{@project.page - 1}" }= '« Previous'
+
+          %li#next
+            - if @project.page == @project.page_count
+              = 'Next »'
+            - else
+              %a{ :href => "?page=#{@project.page + 1}" }= 'Next »'
     

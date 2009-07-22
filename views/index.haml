@@ -13,12 +13,13 @@
     %script{ :src => '/javascripts/projectr.js', :type => 'text/javascript' }
     
   %body
-    #header
-      %h1= 'Projectr'
-      
-    #article
-      %ul
-        - @projects.each do |project|
-          %li
-            %a{ :href => "/#{project.name}" }= project.name
+    #content
+      #header
+        %h1= 'Projectr'
+
+      #article
+        %ul
+          - @projects.each do |project|
+            %li
+              %a{ :href => "/#{project.name}" }= project.name
     
