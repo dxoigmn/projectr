@@ -1,28 +1,33 @@
 $(document).ready(function() {
-  $(".pagination").hide();
+  $('.date').relatizeDate();
   
-  $(".date").relatizeDate();
+  var retrieving = false;
   
   function retrieveCommit() {
-    $('.commit:last').after('<img src="/images/loading.gif" class="loading"/>')
+    url = $('li#next a').attr('href');
     
-    $.get($('.commit:last').attr('id'), function(page) {
-      $(page).find('div.commit').each(function(index, commit) {
-        if (index == 0) {
-          return;
-        }
-        
-        $('.commit:last').after(commit);
-      });
+    if (url != undefined) {
+      retrieving = true;
       
-      $(".date").relatizeDate();
-      $('img.loading').remove();
-    });
+      $('#pagination').hide();
+      $('.commit:last').after('<div id="loading"><img src="/images/loading.gif"/></div>')
+      
+      $.get($('li#next a').attr('href'), function(page) {
+        $('#article').append($(page).find('#article').html());
+        $('#pagination').html($(page).find('#pagination').html());
+        $('.date').relatizeDate();
+        $('div#loading').remove();
+        $('#pagination').show();
+        retrieving = false;
+      });
+    }
   }
   
   $(window).scroll(function(){
     if ($(window).scrollTop() == $(document).height() - $(window).height()){
-       retrieveCommit();
+      if (!retrieving) {
+        retrieveCommit();
+      }
     }
   });
 });

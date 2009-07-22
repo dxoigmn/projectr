@@ -129,20 +129,24 @@ a.selected {
   display: none;
 }
 
+div#loading {
+  text-align: center;
+}
+
 .clear {
   clear: both;
 }
 
-.pagination {
+#pagination {
   font-size: small;
 }
 
-.pagination li {
+#pagination li {
   padding: 0.25em;
   display: inline;
   border-right: 1px solid #999999;
 }
 
-.pagination li:last-child {
+#pagination li:last-child {
   border-right: none;
 }
