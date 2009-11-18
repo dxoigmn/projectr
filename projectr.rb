@@ -1,7 +1,6 @@
 #!/usr/bin/env ruby
 
-require 'rubygems'
-require 'sinatra'
+require 'sinatra/base'
 require 'haml'
 require 'grit'
 require 'digest/md5'
@@ -79,7 +78,7 @@ module Projectr
       @path = path
       @name = File.basename(path)
       @repo = Grit::Repo.new(path)
-      @ref  = options[:ref] || @repo.heads.first.name
+      @ref  = options[:ref] || @repo.heads.first.name rescue 'master'
       @page = (options[:page] || 1).to_i
     end
     
@@ -98,57 +97,67 @@ module Projectr
     def tags
       @repo.tags
     end
-  end
-  
-  def self.all
-    Dir[PATH].map { |path| Projectr::Project.new(path) }
-  end
-  
-  def self.find(name, options = {})
-    path = File.join(File.dirname(PATH), name)
     
-    return nil unless File.directory?(path)
-    
-    Project.new(path, options)
+    def self.all
+      Dir[PATH].map { |path| Projectr::Project.new(path) }
+    end
+
+    def self.find(name, options = {})
+      path = File.join(File.dirname(PATH), name)
+
+      return nil unless File.directory?(path)
+
+      Project.new(path, options)
+    end
+  end
+
+  class Server < Sinatra::Base
+    set :app_file, __FILE__
+    enable :static
+
+    configure do
+      config = YAML.load(IO.read(File.join(File.dirname(__FILE__), 'projectr.yml')))[:projectr]
+
+      fail 'Couldn\'t find configuration.' unless config
+
+      Projectr::PATH = config[:path]
+    end
+
+    get '/' do
+      redirect '/projects'
+    end
+
+    get '/projects/?' do
+      @projects = Project.all
+
+      haml :index
+    end
+
+    get '/projects/:project' do
+      @project = Project.find(params[:project], :page => params[:page])
+
+      halt 'Project does not exist' unless @project
+
+      haml :show
+    end
+
+    get '/projects/:project/:ref.js' do
+      @project = Project.find(params[:project], :ref => params[:ref])
+
+      halt 'Project does not exist' unless @project
+
+      content_type :json
+      @project.commits.to_json
+    end
+
+    get '/projects/:project/:ref' do
+      @project = Project.find(params[:project], :ref => params[:ref], :page => params[:page])
+
+      halt 'Project does not exist' unless @project
+
+      haml :show
+    end
   end
 end
 
-configure do
-  config = YAML.load(IO.read(File.join(File.dirname(__FILE__), 'projectr.yml')))[:projectr]
-  
-  fail 'Couldn\'t find configuration.' unless config
-  
-  Projectr::PATH = config[:path]
-end
-
-get '/' do
-  @projects = Projectr.all
-  
-  haml :index
-end
-
-get '/:project' do
-  @project = Projectr.find(params[:project], :page => params[:page])
-  
-  halt 'Project does not exist' unless @project
-  
-  haml :show
-end
-
-get '/:project/:ref.js' do
-  @project = Projectr.find(params[:project], :ref => params[:ref])
-  
-  halt 'Project does not exist' unless @project
-  
-  content_type :json
-  @project.commits.to_json
-end
-
-get '/:project/:ref' do
-  @project = Projectr.find(params[:project], :ref => params[:ref], :page => params[:page])
-  
-  halt 'Project does not exist' unless @project
-  
-  haml :show
-end
-
+Projectr::Server.run! if __FILE__ == $0
